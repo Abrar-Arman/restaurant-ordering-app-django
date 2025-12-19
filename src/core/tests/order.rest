@@ -1,0 +1,53 @@
+# POST  http://127.0.0.1:8000/api/v1/orders/
+# Content-Type:application/json
+
+# {
+#     "customer_id":1,
+#     "restaurant_id":10,
+#     "delivery_address":"lkjjj",
+#     "phone":"0598506057",
+#     "total_amount":160,
+#     "items":[
+#         {
+#             "dish_id":6,
+#             "price":80,
+#             "quantity":2
+#         }
+#     ]
+
+# }
+
+# PATCH http://127.0.0.1:8000/api/v1/order/set-status/
+# Content-Type: application/json
+
+# {
+#     "id":4,
+#     "status":"confirmed"
+# }
+
+PATCH http://127.0.0.1:8000/api/v1/order/set-status/
+Content-Type: application/json
+
+{
+    "id":7,
+    "status":"cancelled",
+    "msg":"jjjj"
+}
+
+# GET http://127.0.0.1:8000/api/v1/order/1
+
+# DELETE http://127.0.0.1:8000/api/v1/order/3/
+# Content-Type: application/json
+
+
+# PUT http://127.0.0.1:8000/api/v1/order/3/
+# Content-Type: application/json
+
+# {
+#     "delivery_address":"test",
+#     "phone":"1111111111"
+# }
+
+
+
+# GET http://127.0.0.1:8000/api/v1/restaurant/10/orders/

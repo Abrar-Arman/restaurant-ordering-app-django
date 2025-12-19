@@ -2,8 +2,11 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from .models import Restaurant,Category,Dish
+from django.db import transaction
+from django.contrib.auth.models import User
+from .models import Restaurant,Category,Dish,OrderItem,Order
 from .utils.validation import validate_required_fields
+from .forms.order_form import OrderForm,OrderItemForm,OrderStatusForm,OrderUpdateForm
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def restaurants(request):
@@ -239,24 +242,209 @@ def set_availability(request):
         return JsonResponse({'success': False, 'error': 'Dish not found'}, status=404)
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
-   
-
-
-
-
-
-
-
-
-              
-           
-          
     
 
+
+#---------------------------order------------------------------------------
+
+@csrf_exempt
+@require_http_methods(["POST"])
+
+def create_order(request):
+    try:
+        data = json.loads(request.body)
+        items_data = data.get('items', [])
+
+        if not items_data:
+            return JsonResponse(
+                {'error': 'At least one item is required'},
+                status=400
+            )
+
+        form = OrderForm(data)
+        if not form.is_valid():
+            return JsonResponse(
+                {'errors': form.errors},
+                status=400
+            )
+
+        validated_items = []
+        for item in items_data:
+            item_form = OrderItemForm(item)
+            if not item_form.is_valid():
+                return JsonResponse(
+                    {'errors': item_form.errors},
+                    status=400
+                )
+            validated_items.append(item_form.cleaned_data)
+
+        customer = User.objects.get(pk=form.cleaned_data['customer_id'])
+        restaurant = Restaurant.objects.get(pk=form.cleaned_data['restaurant_id'])
+
+        with transaction.atomic():
+            order = Order.objects.create(
+                customer=customer,
+                resturent=restaurant,
+                 delivery_address=form.cleaned_data['delivery_address'],
+                phone=form.cleaned_data['phone'],
+                total_amount=data['total_amount']
+            )
+
+            for item in validated_items:
+                dish = Dish.objects.get(pk=item['dish_id'])
+
+                OrderItem.objects.create(
+                    order=order,
+                    dish=dish,
+                    price=item['price'],
+                    quantity=item['quantity']
+                )
+
+        return JsonResponse(
+            {
+                'message': 'Order created successfully',
+                'order_id': order.id
+            },
+            status=201
+        )
+
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {'error': 'Invalid JSON'},
+            status=400
+        )
     
 
+
+
+@csrf_exempt
+@require_http_methods(["PATCH"])
+def change_order_status(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    order_id = data.get('id')
+    if not order_id:
+        return JsonResponse({'error': 'Order ID is required'}, status=400)
+
+    status_value = data.get('status')
+    if not status_value:
+        return JsonResponse({'error': 'Status is required'}, status=400)
+
+    if status_value == 'cancelled':
+        msg_value = data.get('msg')
+        if not  msg_value:
+            return JsonResponse({'error': "'msg' is required when status is cancelled"}, status=400)
+
+    form = OrderStatusForm({'status': status_value})
+    if not form.is_valid():
+        return JsonResponse({'errors': form.errors}, status=400)
+
+    try:
+        order = Order.objects.get(pk=order_id)
+        order.status = status_value
+        order.save()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Order status updated',
+        })
+    except Order.DoesNotExist:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+
+
+
+
+@csrf_exempt
+@require_http_methods(["GET", "PUT", "DELETE"])
+def manage_order(request, pk):
+    try:
+        order = Order.objects.prefetch_related("orderitem_set").get(pk=pk)
+    except Order.DoesNotExist:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+
+    if request.method == "DELETE":
+        if order.status != 'pending':  
+            return JsonResponse({'error': 'Cannot delete order with this status'}, status=400)
+        order.delete()
+        return JsonResponse({'message': 'Order deleted successfully'})
+
+    elif request.method == "GET":
+        items = [
+            {
+                'id': item.id,
+                'dish_id': item.dish_id,
+                'quantity': item.quantity,
+                'price': item.price
+            }
+            for item in order.orderitem_set.all()
+        ]
+        data = {
+            'id': order.id,
+            'status': order.status,
+            'delivery_address': order.delivery_address,
+            'phone': order.phone,
+            'items': items
+        }
+        return JsonResponse(data, status=200)
+
+    elif request.method == "PUT":
+        if order.status != 'pending':  
+            return JsonResponse({'error': 'Cannot update order with this status'}, status=400)
+
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        form = OrderUpdateForm(data, instance=order)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'message': 'Order updated successfully'}, status=200)
+        else:
+            return JsonResponse({'errors': form.errors}, status=400)
         
 
 
-    
 
+
+#------------------resturent order--------------------------------
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_restaurant_orders(request,pk):
+    try:
+        restaurant = Restaurant.objects.prefetch_related(
+            'order_set__orderitem_set'
+        ).get(pk=pk)
+    except Restaurant.DoesNotExist:
+        return JsonResponse({'error': 'Restaurant not found'}, status=404)
+    orders = restaurant.order_set.all()
+    order_list = []
+    for order in orders:
+        order_list.append({
+            'id': order.id,
+            'status': order.status,
+            'delivery_address': order.delivery_address,
+            'created_at': order.created_at,
+            'phone': order.phone,
+        })
+
+    data = {
+        'restaurant_id': restaurant.id,
+        'restaurant_name': restaurant.name,
+        'order_count': orders.count(),
+        'orders': order_list
+    }
+    return JsonResponse(data, status=200)
+
+
+
+
+
+
+
+   
+
+
+  
