@@ -38,5 +38,5 @@
 # }
 
 
-DELETE http://127.0.0.1:8000/api/v1/dish/5/
+DELETE http://127.0.0.1:8000/api/v1/dish/11/
 Content-Type:application/json

@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 class Rating(models.Model):
      Rating_TYPE=[
           ("dish","Dish"),
-          ("resturent","Resturent"),
+          ("restaurant","Restaurant"),
      ]
      score = models.PositiveSmallIntegerField()
      comment = models.TextField(blank=True)

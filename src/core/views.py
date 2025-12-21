@@ -135,6 +135,11 @@ def restaurant_detail(request, pk):
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_dish(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {'status': 'error', 'message': 'Authentication required'},
+            status=401
+        )
     content_type = request.META.get('CONTENT_TYPE', '')
     if 'multipart/form-data' not in content_type:
         return JsonResponse(
@@ -197,6 +202,11 @@ def create_dish(request):
 @csrf_exempt
 @require_http_methods(["DELETE","PUT"])
 def dish_operation(request,pk):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {'status': 'error', 'message': 'Authentication required'},
+            status=401
+        )
     if request.method=="DELETE":
         try:
             dish=Dish.objects.get(pk=pk)
@@ -251,6 +261,11 @@ def set_availability(request):
 @require_http_methods(["POST"])
 
 def create_order(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {'status': 'error', 'message': 'Authentication required'},
+            status=401
+        )
     try:
         data = json.loads(request.body)
         items_data = data.get('items', [])
@@ -320,6 +335,11 @@ def create_order(request):
 @csrf_exempt
 @require_http_methods(["PATCH"])
 def change_order_status(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {'status': 'error', 'message': 'Authentication required'},
+            status=401
+        )
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -328,6 +348,7 @@ def change_order_status(request):
     order_id = data.get('id')
     if not order_id:
         return JsonResponse({'error': 'Order ID is required'}, status=400)
+    
 
     status_value = data.get('status')
     if not status_value:
@@ -344,6 +365,11 @@ def change_order_status(request):
 
     try:
         order = Order.objects.get(pk=order_id)
+        if request.user != order.customer :
+           return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
         order.status = status_value
         order.save()
         return JsonResponse({
@@ -359,6 +385,16 @@ def change_order_status(request):
 @csrf_exempt
 @require_http_methods(["GET", "PUT", "DELETE"])
 def manage_order(request, pk):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {'status': 'error', 'message': 'Authentication required'},
+            status=401
+        )
+    if request.user.id != pk :
+           return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
     try:
         order = Order.objects.prefetch_related("orderitem_set").get(pk=pk)
     except Order.DoesNotExist:
@@ -437,6 +473,15 @@ def get_restaurant_orders(request,pk):
         'orders': order_list
     }
     return JsonResponse(data, status=200)
+
+
+
+
+
+
+
+
+
 
 
 

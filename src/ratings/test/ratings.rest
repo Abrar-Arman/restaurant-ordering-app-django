@@ -1,0 +1,24 @@
+# POST http://127.0.0.1:8000/api/v1/restaurant/10/rate/
+# Content-Type:application/json
+#Cookie: sessionid=eqrqbqaplvfq27jg7b7piyi1ecty5ryu
+
+# {
+#     "score":2,
+#     "comment":"test",
+#     "customer_id":2
+# }
+
+# DELETE http://127.0.0.1:8000/api/v1/rating/14/
+# Cookie: sessionid=eqrqbqaplvfq27jg7b7piyi1ecty5ryu
+
+# PUT http://127.0.0.1:8000/api/v1/rating/17/
+# Content-Type:application/json
+# Cookie: sessionid=eqrqbqaplvfq27jg7b7piyi1ecty5ryu
+
+# {
+#     "score":4,
+#     "comment":"test"
+# }
+
+# GET http://127.0.0.1:8000/api/v1/user/2/ratings/
+# Cookie: sessionid=eqrqbqaplvfq27jg7b7piyi1ecty5ryu

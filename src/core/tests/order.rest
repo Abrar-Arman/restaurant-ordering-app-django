@@ -1,8 +1,9 @@
 # POST  http://127.0.0.1:8000/api/v1/orders/
 # Content-Type:application/json
+# Cookie: sessionid=ihd9le880bil65wp9lla0c0oni58dleh
 
 # {
-#     "customer_id":1,
+#     "customer_id":2,
 #     "restaurant_id":10,
 #     "delivery_address":"lkjjj",
 #     "phone":"0598506057",
@@ -19,25 +20,27 @@
 
 # PATCH http://127.0.0.1:8000/api/v1/order/set-status/
 # Content-Type: application/json
+# Cookie: sessionid=ihd9le880bil65wp9lla0c0oni58dleh
 
 # {
-#     "id":4,
+#     "id":15,
 #     "status":"confirmed"
 # }
 
-PATCH http://127.0.0.1:8000/api/v1/order/set-status/
-Content-Type: application/json
+# PATCH http://127.0.0.1:8000/api/v1/order/set-status/
+# Content-Type: application/json
 
-{
-    "id":7,
-    "status":"cancelled",
-    "msg":"jjjj"
-}
+# {
+#     "id":7,
+#     "status":"cancelled",
+#     "msg":"jjjj"
+# }
 
 # GET http://127.0.0.1:8000/api/v1/order/1
 
-# DELETE http://127.0.0.1:8000/api/v1/order/3/
+# DELETE http://127.0.0.1:8000/api/v1/order/15/
 # Content-Type: application/json
+# Cookie: sessionid=ihd9le880bil65wp9lla0c0oni58dleh
 
 
 # PUT http://127.0.0.1:8000/api/v1/order/3/
