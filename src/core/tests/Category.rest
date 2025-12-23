@@ -1,0 +1,24 @@
+# GET  http://127.0.0.1:8000/api/v1/categories/
+# Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i
+
+# POST  http://127.0.0.1:8000/api/v1/restaurant/categories/
+# Content-Type:application/json
+# Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i
+
+# {
+#      "restaurant":19,
+#       "category":2
+    
+# }
+DELETE http://127.0.0.1:8000/api/v1/restaurant/categories/
+Content-Type:application/json
+Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i
+
+{
+     "restaurant":19,
+      "category":2
+    
+}
+
+# GET http://127.0.0.1:8000/api/v1/restaurants/my/
+# Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i

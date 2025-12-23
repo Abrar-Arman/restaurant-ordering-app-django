@@ -1,14 +1,13 @@
 
+POST http://127.0.0.1:8000/api/v1/restaurants/
+Content-Type:application/json
+Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i
 
-
-# POST http://127.0.0.1:8000/api/v1/restaurants/
-# Content-Type:application/json
-
-# {
-#     "name":"abrar",
-#     "email":"abrar@gmail.com",
-#     "phone":"12345667"
-# }
+{
+    "name":"myRest",
+    "email":"rest2m@gmail.com",
+    "phone":"1234667"
+}
 
 # PUT http://127.0.0.1:8000/api/v1/restaurants/8/
 # Content-Type:application/json
@@ -19,8 +18,9 @@
 #     "phone":"12345667"
 # }
 
-DELETE  http://127.0.0.1:8000/api/v1/restaurant/7/
-Content-Type: application/json
+# DELETE  http://127.0.0.1:8000/api/v1/restaurant/16/
+# Content-Type: application/json
+# Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i
 
 
 

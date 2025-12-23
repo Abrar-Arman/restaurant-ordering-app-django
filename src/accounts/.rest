@@ -8,15 +8,18 @@
 # }
 
 
-POST http://127.0.0.1:8000/api/v1/login/
-Content-Type:application/json
+# POST http://127.0.0.1:8000/api/v1/login/
+# Content-Type:application/json
 
-{
-    "email":"r@gmail.com",
-    "password":"11111111"   
-}
+# {
+#     "email":"",
+#     "password":"12345678"   
+# }
 
 
 # DELETE http://127.0.0.1:8000/api/v1/logout/
 # Content-Type:application/json
 # Cookie: sessionid=p96cst43pecm44ysc54sa5u4de1vhqwv
+
+GET http://127.0.0.1:8000/api/v1/user-role/
+Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i

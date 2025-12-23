@@ -7,6 +7,27 @@ import json
 from .forms.signup import SignUpForm
 from .forms.login import LoginForm
 
+
+
+
+#--------------------------user role --------------
+
+
+def user_role(request):
+     if not request.user.is_authenticated:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Authentication required'},
+                status=401
+            )
+     user = request.user
+     is_owner = user.restaurant_set.exists() 
+     return JsonResponse({
+        "user_id": user.id,
+        "username": user.username,
+        "is_owner": is_owner
+    })
+
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def signup(request):

@@ -1,9 +1,8 @@
 # POST  http://127.0.0.1:8000/api/v1/orders/
 # Content-Type:application/json
-# Cookie: sessionid=ihd9le880bil65wp9lla0c0oni58dleh
+# Cookie: sessionid=409kuzuc64i0b41m4j6hqnia6mqs8a5o
 
 # {
-#     "customer_id":2,
 #     "restaurant_id":10,
 #     "delivery_address":"lkjjj",
 #     "phone":"0598506057",
@@ -36,11 +35,12 @@
 #     "msg":"jjjj"
 # }
 
-# GET http://127.0.0.1:8000/api/v1/order/1
+# GET http://127.0.0.1:8000/api/v1/order/18
+# Cookie: sessionid=409kuzuc64i0b41m4j6hqnia6mqs8a5o
 
-# DELETE http://127.0.0.1:8000/api/v1/order/15/
+# DELETE http://127.0.0.1:8000/api/v1/order/17/
 # Content-Type: application/json
-# Cookie: sessionid=ihd9le880bil65wp9lla0c0oni58dleh
+# Cookie: sessionid=1n5mbgzooa5yfbnykiu9fqe59hkkosyf
 
 
 # PUT http://127.0.0.1:8000/api/v1/order/3/
@@ -53,4 +53,5 @@
 
 
 
-# GET http://127.0.0.1:8000/api/v1/restaurant/10/orders/
+GET http://127.0.0.1:8000/api/v1/restaurant/9/orders/
+Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i

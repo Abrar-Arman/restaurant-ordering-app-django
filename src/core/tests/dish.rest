@@ -1,5 +1,6 @@
 # POST http://127.0.0.1:8000/api/v1/dishes/
 # Content-Type: multipart/form-data; boundary=MyBoundary
+# Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i
 
 # --MyBoundary
 # Content-Disposition: form-data; name="name"
@@ -16,7 +17,7 @@
 # --MyBoundary
 # Content-Disposition: form-data; name="restaurant_id"
 
-# 1
+# 19
 # --MyBoundary
 # Content-Disposition: form-data; name="category_id"
 
@@ -38,5 +39,6 @@
 # }
 
 
-DELETE http://127.0.0.1:8000/api/v1/dish/11/
+DELETE http://127.0.0.1:8000/api/v1/dish/14/
 Content-Type:application/json
+Cookie: sessionid=zul1pyqzu9hramberbok42do4ixqb15i

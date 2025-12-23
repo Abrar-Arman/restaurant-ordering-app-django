@@ -4,9 +4,134 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.db import transaction
 from django.contrib.auth.models import User
-from .models import Restaurant,Category,Dish,OrderItem,Order
+from .models import Restaurant,Category,Dish,OrderItem,Order,RestaurantCategory
 from .utils.validation import validate_required_fields
 from .forms.order_form import OrderForm,OrderItemForm,OrderStatusForm,OrderUpdateForm
+from .forms.category_form import RestaurantCategoryForm
+
+
+
+
+#----------------Category ------------------------
+@csrf_exempt
+@require_http_methods(["GET"])
+def get_categories(request):
+     if not request.user.is_authenticated:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Authentication required'},
+                status=401
+            )
+     categories=list(  Category.objects.values('id', 'name'))
+     return JsonResponse({
+         'status': 'success',
+        'data': categories
+     },status=200)
+
+
+#-----------------restaurantCategory---------------
+@csrf_exempt
+@require_http_methods(["POST","DELETE"])
+def manage_restaurant_category(request):
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"error": "Authentication required"},
+            status=401
+        )
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Invalid JSON format'
+        }, status=400)
+
+    try:
+        category = Category.objects.get(pk=data.get('category'))
+    except Category.DoesNotExist:
+        return JsonResponse({"error": "Category not found"}, status=404)
+
+    try:
+        restaurant = Restaurant.objects.get(pk=data.get('restaurant'))
+    except Restaurant.DoesNotExist:
+        return JsonResponse({"error": "Restaurant not found"}, status=404)
+
+    if restaurant.owner != request.user:
+        return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
+
+    if request.method == "POST":
+        # restaurant_category_form = RestaurantCategoryForm(data)
+        # if not restaurant_category_form.is_valid():
+        #     return JsonResponse({'msg': 'Missing required fields'}, status=400)
+
+        RestaurantCategory.objects.create(
+            restaurant=restaurant,
+            category=category
+        )
+        return JsonResponse({
+            "message": "Category added successfully",
+            "status": 'success',
+        }, status=201)
+
+    elif request.method == "DELETE":
+        deleted, _ = RestaurantCategory.objects.filter(
+            restaurant=restaurant,
+            category=category
+        ).delete()
+
+        if deleted:
+            return JsonResponse({
+                "message": "Category deleted successfully",
+                "status": 'success'
+            }, status=200)
+        else:
+            return JsonResponse({
+                "error": "Category not found for this restaurant"
+            }, status=404)
+
+
+
+
+
+     
+     
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def my_restaurants(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Authentication required"}, status=401)
+
+    restaurants = Restaurant.objects.filter(owner=request.user)
+
+    data = []
+    for r in restaurants:
+        categories = RestaurantCategory.objects.filter(restaurant=r).select_related('category')
+        category_list = [{"id": c.category.id, "name": c.category.name} for c in categories]
+
+        data.append({
+            "id": r.id,
+            "name": r.name,
+            "email": r.email,
+            "phone": r.phone,
+            "created_at": r.created_at,
+            "categories": category_list
+        })
+
+    return JsonResponse({"restaurants": data}, status=200)
+      
+          
+          
+      
+
+
+     
+
+
+
+
+
+# -----------------restaurants -------------------------------------
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def restaurants(request):
@@ -18,13 +143,21 @@ def restaurants(request):
         }, safe=False)
     
     if request.method=="POST":
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Authentication required'},
+                status=401
+            )
+        if not request.user.is_superuser:
+            return JsonResponse({'error': 'Only super admins can create restaurants'}, status=403)
+
         data=json.loads(request.body)
         is_valid, missing= validate_required_fields(data,['name', 'email', 'phone'])
         if not is_valid:
             return JsonResponse({
                 'msg': f'Missing required fields: {", ".join(missing)}'
             },status=400)
-        restaurant = Restaurant.objects.create(name=data['name'],email=data['email'],phone=data['phone'] )
+        restaurant = Restaurant.objects.create(name=data['name'],email=data['email'],phone=data['phone'], owner=request.user )
         return JsonResponse({
             "msg":'Restaurant created successfully',
             "status":'success',
@@ -73,6 +206,11 @@ def restaurant_detail(request, pk):
             }, status=404)
     
     elif request.method == "PUT":
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Authentication required'},
+                status=401
+            )
         try:
             data = json.loads(request.body)
             is_valid, missing= validate_required_fields(data,['name', 'email', 'phone'])
@@ -82,6 +220,12 @@ def restaurant_detail(request, pk):
                 },status=400)
             
             restaurant = Restaurant.objects.get(pk=pk)
+            if restaurant.owner_id !=request.user.id:
+                 return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
+
             restaurant.name = data['name']
             restaurant.email = data['email']
             restaurant.phone = data['phone']
@@ -109,8 +253,18 @@ def restaurant_detail(request, pk):
             }, status=400)
     
     elif request.method == "DELETE":
+        if not request.user.is_authenticated:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Authentication required'},
+                status=401
+            )
         try:
             restaurant = Restaurant.objects.get(pk=pk)
+            if restaurant.owner_id !=request.user.id:
+                 return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
             restaurant_name = restaurant.name
             restaurant.delete()
             
@@ -131,7 +285,7 @@ def restaurant_detail(request, pk):
         
 
 
-#dish end point 
+#---------------------------dish end point ----------------------------
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_dish(request):
@@ -168,8 +322,11 @@ def create_dish(request):
             {'status': 'error', 'message': 'Restaurant not found'},
             status=400
         )
-
-    
+    if restaurant.owner_id !=request.user.id:
+                 return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
     try:
         category = Category.objects.get(pk=data.get('category_id'))
     except Category.DoesNotExist:
@@ -210,6 +367,12 @@ def dish_operation(request,pk):
     if request.method=="DELETE":
         try:
             dish=Dish.objects.get(pk=pk)
+            if dish.restaurant.owner != request.user:
+                 return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
+
             dish_name=dish.name
             dish.delete()
             return JsonResponse({
@@ -240,6 +403,11 @@ def set_availability(request):
           
       try:
         dish = Dish.objects.get(pk=data['id'])
+        if dish.restaurant.owner != request.user:
+                 return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
         dish.is_avalible = data['is_avalible']
         dish.save()
         return JsonResponse({
@@ -293,7 +461,7 @@ def create_order(request):
                 )
             validated_items.append(item_form.cleaned_data)
 
-        customer = User.objects.get(pk=form.cleaned_data['customer_id'])
+        customer = request.user
         restaurant = Restaurant.objects.get(pk=form.cleaned_data['restaurant_id'])
 
         with transaction.atomic():
@@ -390,15 +558,16 @@ def manage_order(request, pk):
             {'status': 'error', 'message': 'Authentication required'},
             status=401
         )
-    if request.user.id != pk :
-           return JsonResponse(
-                {'status': 'error', 'message': 'Permission denied'},
-                status=403
-            )
+    
     try:
         order = Order.objects.prefetch_related("orderitem_set").get(pk=pk)
     except Order.DoesNotExist:
         return JsonResponse({'error': 'Order not found'}, status=404)
+    if order.customer_id != request.user.id :
+           return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
 
     if request.method == "DELETE":
         if order.status != 'pending':  
@@ -449,12 +618,19 @@ def manage_order(request, pk):
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_restaurant_orders(request,pk):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required'},status=401)
     try:
         restaurant = Restaurant.objects.prefetch_related(
-            'order_set__orderitem_set'
+            'order_set'
         ).get(pk=pk)
     except Restaurant.DoesNotExist:
         return JsonResponse({'error': 'Restaurant not found'}, status=404)
+    if restaurant.owner_id !=request.user.id:
+                 return JsonResponse(
+                {'status': 'error', 'message': 'Permission denied'},
+                status=403
+            )
     orders = restaurant.order_set.all()
     order_list = []
     for order in orders:

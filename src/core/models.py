@@ -24,10 +24,17 @@ class Restaurant(models.Model):
     phone=models.CharField(max_length=20,unique=True)
     created_at=models.DateField(auto_now_add=True)
     ratings=GenericRelation(Rating)
+    owner=models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
 
     def __str__(self):
         return self.name
     
+class RestaurantCategory(models.Model):
+    restaurant=models.ForeignKey(Restaurant,on_delete=models.CASCADE)
+    category=models.ForeignKey(Category,on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('restaurant', 'category')
 
 
 

@@ -5,20 +5,12 @@ from core.models import Restaurant, Order, OrderItem, Dish
 
 
 class OrderForm(forms.ModelForm):
-    customer_id = forms.IntegerField(required=True)
     restaurant_id = forms.IntegerField(required=True)
 
     class Meta:
         model = Order
-        fields = ['delivery_address', 'phone']
+        fields = ['delivery_address', 'phone','total_amount']
 
-    def clean_customer_id(self):
-        customer_id = self.cleaned_data.get('customer_id')
-        try:
-            User.objects.get(pk=customer_id)
-        except User.DoesNotExist:
-            raise ValidationError("Customer with this ID does not exist.")
-        return customer_id
 
     def clean_restaurant_id(self):
         restaurant_id = self.cleaned_data.get('restaurant_id')
