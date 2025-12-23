@@ -1,0 +1,709 @@
+openapi: 3.0.0
+
+info:
+  title: Restaurant API
+  version: "1.0"
+  description: Complete API documentation for restaurants, dishes, categories, orders, ratings, and authentication
+
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Restaurants
+    description: Restaurant management endpoints
+  - name: Dishes
+    description: Dish management endpoints
+  - name: Categories
+    description: Category management endpoints
+  - name: Orders
+    description: Order management endpoints
+  - name: Ratings
+    description: Rating endpoints
+
+servers:
+  - url: http://127.0.0.1:8000
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+
+  schemas:
+
+    # =========================
+    # Auth
+    # =========================
+    Signup:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: rrr
+        email:
+          type: string
+          example: r@gmail.com
+        password:
+          type: string
+          example: 11111111
+
+    Login:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: r@gmail.com
+        password:
+          type: string
+          example: 12345678
+
+    UserRole:
+      type: object
+      properties:
+        role:
+          type: string
+          example: owner
+
+    # =========================
+    # Restaurant
+    # =========================
+    Restaurant:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+      properties:
+        name:
+          type: string
+          example: myRest
+        email:
+          type: string
+          example: rest2m@gmail.com
+        phone:
+          type: string
+          example: "1234667"
+
+    # =========================
+    # Dish
+    # =========================
+    DishCreate:
+      type: object
+      required:
+        - name
+        - description
+        - price
+        - restaurant_id
+        - category_id
+      properties:
+        name:
+          type: string
+          example: Margherita Pizza
+        description:
+          type: string
+          example: Fresh mozzarella and basil
+        price:
+          type: number
+          format: float
+          example: 12.99
+        restaurant_id:
+          type: integer
+          example: 19
+        category_id:
+          type: integer
+          example: 1
+        thumbnail:
+          type: string
+          format: binary
+
+    DishAvailability:
+      type: object
+      required:
+        - id
+        - is_available
+      properties:
+        id:
+          type: integer
+          example: 3
+        is_available:
+          type: boolean
+          example: false
+
+    # =========================
+    # Category
+    # =========================
+    Category:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Italian
+
+    RestaurantCategory:
+      type: object
+      required:
+        - restaurant
+        - category
+      properties:
+        restaurant:
+          type: integer
+          example: 19
+        category:
+          type: integer
+          example: 2
+
+    # =========================
+    # Orders
+    # =========================
+    OrderItem:
+      type: object
+      required:
+        - dish_id
+        - price
+        - quantity
+      properties:
+        dish_id:
+          type: integer
+          example: 6
+        price:
+          type: number
+          format: float
+          example: 80
+        quantity:
+          type: integer
+          example: 2
+
+    OrderCreate:
+      type: object
+      required:
+        - restaurant_id
+        - delivery_address
+        - phone
+        - total_amount
+        - items
+      properties:
+        restaurant_id:
+          type: integer
+          example: 10
+        delivery_address:
+          type: string
+          example: lkjjj
+        phone:
+          type: string
+          example: 0598506057
+        total_amount:
+          type: number
+          format: float
+          example: 160
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+
+    OrderStatusUpdate:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: integer
+          example: 15
+        status:
+          type: string
+          enum: [confirmed, cancelled]
+          example: confirmed
+        msg:
+          type: string
+          example: Optional cancellation message
+
+    OrderUpdate:
+      type: object
+      properties:
+        delivery_address:
+          type: string
+          example: test
+        phone:
+          type: string
+          example: 1111111111
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 18
+        restaurant_id:
+          type: integer
+          example: 10
+        delivery_address:
+          type: string
+          example: lkjjj
+        phone:
+          type: string
+          example: 0598506057
+        total_amount:
+          type: number
+          format: float
+          example: 160
+        status:
+          type: string
+          example: pending
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+
+    # =========================
+    # Ratings
+    # =========================
+    Rating:
+      type: object
+      required:
+        - score
+        - comment
+        - customer_id
+      properties:
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 2
+        comment:
+          type: string
+          example: test
+        customer_id:
+          type: integer
+          example: 2
+
+    RatingUpdate:
+      type: object
+      required:
+        - score
+        - comment
+      properties:
+        score:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        comment:
+          type: string
+          example: test
+
+security:
+  - sessionAuth: []
+
+paths:
+
+  # =========================
+  # Auth
+  # =========================
+  /api/v1/signup/:
+    post:
+      tags: [Auth]
+      summary: Signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Signup"
+      responses:
+        "201":
+          description: User created successfully
+        "400":
+          description: Invalid input
+
+  /api/v1/login/:
+    post:
+      tags: [Auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+      responses:
+        "200":
+          description: Logged in successfully
+        "401":
+          description: Invalid credentials
+
+  /api/v1/logout/:
+    delete:
+      tags: [Auth]
+      summary: Logout
+      security:
+        - sessionAuth: []
+      responses:
+        "204":
+          description: Logout successful
+        "401":
+          description: Not logged in
+
+  /api/v1/user-role/:
+    get:
+      tags: [Auth]
+      summary: Get user role
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Current user role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRole"
+        "401":
+          description: Authentication required
+
+  # =========================
+  # Restaurants
+  # =========================
+  /api/v1/restaurants/:
+    post:
+      tags: [Restaurants]
+      summary: Create restaurant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Restaurant"
+      responses:
+        "201": { description: Restaurant created successfully }
+        "400": { description: Invalid input }
+        "401": { description: Authentication required }
+
+  /api/v1/restaurants/{id}/:
+    put:
+      tags: [Restaurants]
+      summary: Update restaurant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 8 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Restaurant"
+      responses:
+        "200": { description: Restaurant updated successfully }
+        "404": { description: Restaurant not found }
+    delete:
+      tags: [Restaurants]
+      summary: Delete restaurant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 16 }
+      responses:
+        "204": { description: Restaurant deleted successfully }
+        "403": { description: Permission denied }
+
+  /api/v1/restaurants/my/:
+    get:
+      tags: [Restaurants]
+      summary: Get my restaurants
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: List of my restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
+
+  # =========================
+  # Dishes
+  # =========================
+  /api/v1/dishes/:
+    post:
+      tags: [Dishes]
+      summary: Create dish
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/DishCreate"
+      responses:
+        "201": { description: Dish created successfully }
+
+  /api/v1/dish/set-availability/:
+    patch:
+      tags: [Dishes]
+      summary: Set dish availability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DishAvailability"
+      responses:
+        "200": { description: Availability updated successfully }
+        "404": { description: Dish not found }
+
+  /api/v1/dish/{id}/:
+    delete:
+      tags: [Dishes]
+      summary: Delete dish
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 14 }
+      responses:
+        "204": { description: Dish deleted successfully }
+        "403": { description: Permission denied }
+
+  # =========================
+  # Categories
+  # =========================
+  /api/v1/categories/:
+    get:
+      tags: [Categories]
+      summary: List categories
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+  /api/v1/restaurant/categories/:
+    post:
+      tags: [Categories]
+      summary: Assign category to restaurant
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantCategory"
+      responses:
+        "201": { description: Category assigned successfully }
+    delete:
+      tags: [Categories]
+      summary: Remove category from restaurant
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantCategory"
+      responses:
+        "204": { description: Category removed successfully }
+        "403": { description: Permission denied }
+
+  # =========================
+  # Orders
+  # =========================
+  /api/v1/orders/:
+    post:
+      tags: [Orders]
+      summary: Create order
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreate"
+      responses:
+        "201": { description: Order created successfully }
+
+  /api/v1/order/set-status/:
+    patch:
+      tags: [Orders]
+      summary: Update order status
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusUpdate"
+      responses:
+        "200": { description: Order status updated successfully }
+
+  /api/v1/order/{id}/:
+    get:
+      tags: [Orders]
+      summary: Get order
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 18 }
+      responses:
+        "200":
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+    put:
+      tags: [Orders]
+      summary: Update order
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 3 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderUpdate"
+      responses:
+        "200": { description: Order updated successfully }
+    delete:
+      tags: [Orders]
+      summary: Delete order
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 17 }
+      responses:
+        "204": { description: Order deleted successfully }
+
+  /api/v1/restaurant/{id}/orders/:
+    get:
+      tags: [Orders]
+      summary: Get restaurant orders
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 9 }
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  # =========================
+  # Ratings
+  # =========================
+  /api/v1/restaurant/{id}/rate/:
+    post:
+      tags: [Ratings]
+      summary: Rate a restaurant
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 10 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Rating"
+      responses:
+        "201": { description: Rating submitted successfully }
+
+  /api/v1/rating/{id}/:
+    delete:
+      tags: [Ratings]
+      summary: Delete a rating
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 14 }
+      responses:
+        "204": { description: Rating deleted successfully }
+        "403": { description: Permission denied }
+
+    put:
+      tags: [Ratings]
+      summary: Update a rating
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 17 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatingUpdate"
+      responses:
+        "200": { description: Rating updated successfully }
+
+  /api/v1/user/{id}/ratings/:
+    get:
+      tags: [Ratings]
+      summary: Get all ratings by a user
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, example: 2 }
+      responses:
+        "200":
+          description: List of user ratings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rating"
