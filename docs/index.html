@@ -22,7 +22,8 @@
   <script>
     window.onload = function() {
       const ui = SwaggerUIBundle({
-        url: "https://raw.githubusercontent.com/Abrar-Arman/restaurant-ordering-app-django/main/docs/swagger.yaml",
+        // YAML is now in the same folder, so we can use relative path
+        url: "swagger.yaml",
         dom_id: '#swagger-ui',
         presets: [
           SwaggerUIBundle.presets.apis,
