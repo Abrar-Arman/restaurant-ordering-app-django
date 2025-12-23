@@ -5,11 +5,11 @@
 
 # {
 #     "name":"myRest",
-#     "email":"rest2nm@gmail.com",
-#     "phone":"12346867"
+#     "email":"rest2nmk@gmail.com",
+#     "phone":"123468697"
 # }
 
-# GET http://127.0.0.1:8000/api/v1/restaurants/
+GET http://127.0.0.1:8000/api/v1/restaurants/
 
 
 # GET http://127.0.0.1:8000/api/v1/restaurant/9/

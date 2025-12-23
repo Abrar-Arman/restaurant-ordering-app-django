@@ -81,6 +81,9 @@ components:
         - email
         - phone
       properties:
+        id:
+          type: integer
+          example: 1
         name:
           type: string
           example: myRest
@@ -90,6 +93,9 @@ components:
         phone:
           type: string
           example: "1234667"
+        owner:
+          type: string
+          example: owner_username
 
     # =========================
     # Dish
@@ -323,10 +329,8 @@ paths:
             schema:
               $ref: "#/components/schemas/Signup"
       responses:
-        "201":
-          description: User created successfully
-        "400":
-          description: Invalid input
+        "201": { description: User created successfully }
+        "400": { description: Invalid input }
 
   /api/v1/login/:
     post:
@@ -339,10 +343,8 @@ paths:
             schema:
               $ref: "#/components/schemas/Login"
       responses:
-        "200":
-          description: Logged in successfully
-        "401":
-          description: Invalid credentials
+        "200": { description: Logged in successfully }
+        "401": { description: Invalid credentials }
 
   /api/v1/logout/:
     delete:
@@ -351,10 +353,8 @@ paths:
       security:
         - sessionAuth: []
       responses:
-        "204":
-          description: Logout successful
-        "401":
-          description: Not logged in
+        "204": { description: Logout successful }
+        "401": { description: Not logged in }
 
   /api/v1/user-role/:
     get:
@@ -369,13 +369,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserRole"
-        "401":
-          description: Authentication required
+        "401": { description: Authentication required }
 
   # =========================
   # Restaurants
   # =========================
   /api/v1/restaurants/:
+    get:
+      tags: [Restaurants]
+      summary: List all restaurants
+      responses:
+        "200":
+          description: List of restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
     post:
       tags: [Restaurants]
       summary: Create restaurant
@@ -419,6 +430,26 @@ paths:
       responses:
         "204": { description: Restaurant deleted successfully }
         "403": { description: Permission denied }
+
+  /api/v1/restaurant/{id}/:
+    get:
+      tags: [Restaurants]
+      summary: Get a single restaurant by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 9
+      responses:
+        "200":
+          description: Restaurant details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Restaurant"
+        "404": { description: Restaurant not found }
 
   /api/v1/restaurants/my/:
     get:
@@ -667,7 +698,6 @@ paths:
       responses:
         "204": { description: Rating deleted successfully }
         "403": { description: Permission denied }
-
     put:
       tags: [Ratings]
       summary: Update a rating

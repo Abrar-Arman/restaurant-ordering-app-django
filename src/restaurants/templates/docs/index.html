@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>API Documentation</title>
+  <!-- Swagger UI CSS (local) -->
+  <link rel="stylesheet" href="{% static 'swagger-ui/swagger-ui.css' %}" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    #swagger-ui {
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+
+  <!-- Swagger UI JS (local) -->
+  <script src="{% static 'swagger-ui/swagger-ui-bundle.js' %}"></script>
+  <script src="{% static 'swagger-ui/swagger-ui-standalone-preset.js' %}"></script>
+
+  <script>
+    // Initialize Swagger UI
+    const ui = SwaggerUIBundle({
+      url: "{% static 'docs/swagger.yaml' %}",  // your YAML file
+      dom_id: '#swagger-ui',
+      presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIStandalonePreset
+      ],
+      layout: "StandaloneLayout",
+      deepLinking: true
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

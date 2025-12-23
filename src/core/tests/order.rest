@@ -1,21 +1,21 @@
-# POST  http://127.0.0.1:8000/api/v1/orders/
-# Content-Type:application/json
-# Cookie: sessionid=409kuzuc64i0b41m4j6hqnia6mqs8a5o
+POST  http://127.0.0.1:8000/api/v1/orders/
+Content-Type:application/json
+Cookie: sessionid=409kuzuc64i0b41m4j6hqnia6mqs8a5o
 
-# {
-#     "restaurant_id":10,
-#     "delivery_address":"lkjjj",
-#     "phone":"0598506057",
-#     "total_amount":160,
-#     "items":[
-#         {
-#             "dish_id":6,
-#             "price":80,
-#             "quantity":2
-#         }
-#     ]
+{
+    "restaurant_id":10,
+    "delivery_address":"lkjjj",
+    "phone":"0598506057",
+    "total_amount":160,
+    "items":[
+        {
+            "dish_id":6,
+            "price":80,
+            "quantity":2
+        }
+    ]
 
-# }
+}
 
 # PATCH http://127.0.0.1:8000/api/v1/order/set-status/
 # Content-Type: application/json
